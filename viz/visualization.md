@@ -12,6 +12,6 @@ layout: base
   <h2>Under construction..<a class="headerlink" href="#institutions" title="Permalink to this headline">¶</a></h2>
   <a><img alt="Under construction" src="{{ "/assets/images/Underconstruction.png" | relative_url }}" width="10"></a>
   
-  <a><img alt="" src="{{ "/assets/images/ifexd/1.gif" | relative_url }}" width="120%"></a>
+  <a><img alt="" src="{{ "assets/images/ifexd/1.gif" | relative_url }}" width="120%"></a>
   </div>
   </div>
