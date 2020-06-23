@@ -1,0 +1,94 @@
+I"l&<h1 id="a-quick-start-with-svm-3min">A Quick Start with SVM [~3min]</h1>
+<p>In this notebook, we explain to download the dataset and getting started with all the predictive tasks using Support Vector Machine. We will be extracting spectral features, specifically 6 rhythmic features - total power in 6 frequency bands, namely, Delta (0.5-4 Hz), Theta (4-8 Hz), Alpha (8-14 Hz), Beta (14-30 Hz), Low Gamma (30-47 Hz), and High Gamma (47-64 Hz). For preprocessing, we filter EEG first with 0.5 Hz highpass and then remove Artifact with ICA based approach.</p>
+
+<p style="text-align:right; font-weight:bold;">Execute with <br /><a class="reference external image-reference" href="https://mybinder.org/v2/gh/Nikeshbajaj/Notebooks/master?filepath=PhyAAt_Notebooks/Example0_QuickStartSVM.ipynb" target="_blank"><img src="https://mybinder.org/badge_logo.svg" width="150px" /></a></p>
+
+<h2 id="complete-code">Complete code</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">svm</span>
+
+<span class="c1">#!pip install phyaat  # if not installed yet
+</span><span class="kn">import</span> <span class="nn">phyaat</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Version :'</span> <span class="p">,</span><span class="n">phyaat</span><span class="p">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">phyaat</span> <span class="k">as</span> <span class="n">ph</span>
+
+<span class="c1"># Download dataset of one subject only (subject=1)
+# To download data of all the subjects use subject =-1 or for specify for one e.g.subject=10
+</span>
+<span class="n">dirPath</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span>   <span class="c1"># or dirPath return path from above
+</span>
+<span class="c1">#returns a dictionary containing file names of all the subjects available in baseDir
+</span><span class="n">SubID</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">ReadFilesPath</span><span class="p">(</span><span class="n">baseDir</span><span class="p">)</span>
+
+<span class="c1">#check files of subject=1
+</span><span class="k">print</span><span class="p">(</span><span class="n">SubID</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+ <span class="c1"># Create a Subj holding dataset of subject=1
+</span><span class="n">Subj</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">Subject</span><span class="p">(</span><span class="n">SubID</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+
+<span class="c1">#filtering with highpass filter of cutoff frequency 0.5Hz
+</span><span class="n">Subj</span><span class="p">.</span><span class="n">filter_EEG</span><span class="p">(</span><span class="n">band</span> <span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">],</span><span class="n">btype</span><span class="o">=</span><span class="s">'highpass'</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+
+<span class="c1"># Extract Rhythmic features for task=4
+</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+<span class="c1"># Normalization - SVM works well with normalized features
+</span><span class="n">means</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">std</span>   <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_train</span><span class="o">-</span><span class="n">means</span><span class="p">)</span><span class="o">/</span><span class="n">std</span>
+<span class="n">X_test</span>  <span class="o">=</span> <span class="p">(</span><span class="n">X_test</span><span class="o">-</span><span class="n">means</span><span class="p">)</span><span class="o">/</span><span class="n">std</span>
+
+
+<span class="c1"># Training
+</span><span class="n">clf</span> <span class="o">=</span> <span class="n">svm</span><span class="p">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">'rbf'</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">gamma</span><span class="o">=</span><span class="s">'auto'</span><span class="p">)</span>
+<span class="n">clf</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Predition
+</span><span class="n">ytp</span> <span class="o">=</span> <span class="n">clf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">ysp</span> <span class="o">=</span> <span class="n">clf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="c1"># Evaluation
+</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Training Accuracy:'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_train</span><span class="o">==</span><span class="n">ytp</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Testing  Accuracy:'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_test</span><span class="o">==</span><span class="n">ysp</span><span class="p">))</span>
+
+</code></pre></div></div>
+
+<p>PhyAAt Processing lib Loaded… <br />
+Version : 0.0.2</p>
+
+<p>Total Subjects :  1#######################################] S1</p>
+
+<p>{‘sigFile’: ‘../PhyAAt_Data/phyaat_dataset/Signals/S1/S1_Signals.csv’, ‘txtFile’: ‘../PhyAAt_Data/phyaat_dataset/Signals/S1/S1_Textscore.csv’}</p>
+
+<p>100%|##################################################|100\100|Sg - 0 <br />
+Done.. <br />
+100%|##################################################|100\100|Sg - 1 <br />
+Done.. <br />
+100%|##################################################|100\100|Sg - 2 <br />
+Done.. <br />
+100%|##################################################|43\43|Sg - 0 <br />
+Done.. <br />
+100%|##################################################|43\43|Sg - 1 <br />
+Done.. <br />
+100%|##################################################|43\43|Sg - 2 <br />
+Done.. <br />
+DataShape:  (290, 84) (290,) (120, 84) (120,) <br /></p>
+
+<p>Class labels : [0 1 2] <br />
+Training Accuracy: 0.9310344827586207 <br />
+Testing  Accuracy: 0.8666666666666667</p>
+
+<p style="text-align:center; font-weight:bold;">Execute with <br /><a class="reference external image-reference" href="https://mybinder.org/v2/gh/Nikeshbajaj/Notebooks/master?filepath=PhyAAt_Notebooks/Example0_QuickStartSVM.ipynb" target="_blank"><img src="https://mybinder.org/badge_logo.svg" width="150px" /></a></p>
+:ET

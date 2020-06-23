@@ -1,0 +1,15 @@
+# Name of website
+title: IFExD
+email: nikkeshbajaj@gmail.com
+author: Nikesh Bajaj
+#url: https://PhyAAt.github.io
+
+navbar-links:
+  Introduction: "introduction"
+  Experiment:
+    - Experiment: "https://IFExD.github.io/experiment/index"
+    - Dataset: "https://IFExD.github.io/dataset"
+  Author's home: "http://nikeshbajaj.in"
+
+name: ifexd.github.io
+markdown: kramdown

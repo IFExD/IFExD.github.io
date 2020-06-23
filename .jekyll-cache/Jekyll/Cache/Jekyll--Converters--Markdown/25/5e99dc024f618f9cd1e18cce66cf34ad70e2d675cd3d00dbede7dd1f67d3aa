@@ -1,0 +1,203 @@
+I"±^<h1 id="feature-extraction-framework">Feature Extraction Framework</h1>
+
+<p>In this notebook, we explain how to extract features segment-wise and window-wise (check the paper for theoretical details). We would also explain the possible parameters to tune the feature extraction process.</p>
+
+<p style="text-align:right; font-weight:bold;">Execute with <br /><a class="reference external image-reference" href="https://mybinder.org/v2/gh/Nikeshbajaj/Notebooks/master?filepath=PhyAAt_Notebooks/Example3_FeatureExtraction.ipynb" target="_blank"><img src="https://mybinder.org/badge_logo.svg" width="150px" /></a></p>
+
+<h2>Table of Contents<span class="tocSkip"></span></h2>
+<div class="toc"><ul class="toc-item"><li><span><a href="#Read-the-data-of-subject=1" data-toc-modified-id="Read-the-data-of-subject=1-1"><span class="toc-item-num">1&nbsp;&nbsp;</span>Read the data of subject=1</a></span></li><li><span><a href="#Filtering" data-toc-modified-id="Filtering-2"><span class="toc-item-num">2&nbsp;&nbsp;</span>Filtering</a></span></li><li><span><a href="#Artifact-removal-using-ICA" data-toc-modified-id="Artifact-removal-using-ICA-3"><span class="toc-item-num">3&nbsp;&nbsp;</span>Artifact removal using ICA</a></span></li><li><span><a href="#T4:-LWR-Classification" data-toc-modified-id="T4:-LWR-Classification-4"><span class="toc-item-num">4&nbsp;&nbsp;</span>T4: LWR Classification</a></span><ul class="toc-item"><li><span><a href="#Segment-wise-feature-extraction" data-toc-modified-id="Segment-wise-feature-extraction-4.1"><span class="toc-item-num">4.1&nbsp;&nbsp;</span>Segment-wise feature extraction</a></span></li><li><span><a href="#Window-wise-Feature-Extraction-(2sec-window)" data-toc-modified-id="Window-wise-Feature-Extraction-(2sec-window)-4.2"><span class="toc-item-num">4.2&nbsp;&nbsp;</span>Window-wise Feature Extraction (2sec window)</a></span><ul class="toc-item"><li><span><a href="#Notice-the-number-of-exmaples-(Shape-of-X,-y)" data-toc-modified-id="Notice-the-number-of-exmaples-(Shape-of-X,-y)-4.2.1"><span class="toc-item-num">4.2.1&nbsp;&nbsp;</span>Notice the number of exmaples (Shape of X, y)</a></span></li></ul></li></ul></li><li><span><a href="#Tuning-Feature-Extraction-process" data-toc-modified-id="Tuning-Feature-Extraction-process-5"><span class="toc-item-num">5&nbsp;&nbsp;</span>Tuning Feature Extraction process</a></span></li></ul></div>
+
+<h2 id="import-libraries">Import Libraries</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">svm</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">phyaat</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Version :'</span> <span class="p">,</span><span class="n">phyaat</span><span class="p">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">phyaat</span> <span class="k">as</span> <span class="n">ph</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PhyAAt Processing lib Loaded...
+Version : 0.0.2
+</code></pre></div></div>
+
+<h2 id="read-the-data-of-subject1">Read the data of subject=1</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">dirPath</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span>
+
+<span class="n">SubID</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">ReadFilesPath</span><span class="p">(</span><span class="n">baseDir</span><span class="p">)</span>
+
+<span class="n">Subj</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">Subject</span><span class="p">(</span><span class="n">SubID</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Total Subjects :  1
+</code></pre></div></div>
+
+<h2 id="filtering">Filtering</h2>
+<p><strong>With Custum frequency range</strong></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Subj</span><span class="p">.</span><span class="n">filter_EEG</span><span class="p">(</span><span class="n">band</span> <span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">],</span><span class="n">btype</span><span class="o">=</span><span class="s">'highpass'</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="artifact-removal-using-ica">Artifact removal using ICA</h2>
+<p><strong>Tune threshold, windowsize, ICA method</strong></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">KurThr</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Corr</span>   <span class="o">=</span> <span class="mf">0.8</span>
+<span class="n">ICAMed</span> <span class="o">=</span> <span class="s">'extended-infomax'</span> <span class="c1">#picard, fastICA
+</span><span class="n">winsize</span><span class="o">=</span><span class="mi">128</span><span class="o">*</span><span class="mi">10</span> <span class="c1"># 20sec
+</span>
+<span class="n">Subj</span><span class="p">.</span><span class="n">correct</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'ICA'</span><span class="p">,</span><span class="n">winsize</span><span class="o">=</span><span class="n">winsize</span><span class="p">,</span><span class="n">hopesize</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">Corr</span><span class="o">=</span><span class="n">Corr</span><span class="p">,</span><span class="n">KurThr</span><span class="o">=</span><span class="n">KurThr</span><span class="p">,</span>
+            <span class="n">ICAMed</span><span class="o">=</span><span class="n">ICAMed</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">window</span><span class="o">=</span><span class="p">[</span><span class="s">'hamming'</span><span class="p">,</span><span class="bp">True</span><span class="p">],</span><span class="n">winMeth</span><span class="o">=</span><span class="s">'custom'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ICA Artifact Removal : extended-infomax
+100%|###########################################################|
+</code></pre></div></div>
+
+<h2 id="t4-lwr-classification">T4: LWR Classification</h2>
+
+<h3 id="segment-wise-feature-extraction">Segment-wise feature extraction</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">features</span><span class="o">=</span><span class="s">'rhythmic'</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                  <span class="n">redo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">winsize</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">hopesize</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>100%|##################################################|100\100|Sg - 0
+Done..
+100%|##################################################|100\100|Sg - 1
+Done..
+100%|##################################################|100\100|Sg - 2
+Done..
+100%|##################################################|43\43|Sg - 0
+Done..
+100%|##################################################|43\43|Sg - 1
+Done..
+100%|##################################################|43\43|Sg - 2
+Done..
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DataShape:  (290, 84) (290,) (120, 84) (120,)
+
+Class labels : [0 1 2]
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Normalization - SVM works well with normalized features
+</span><span class="n">means</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">std</span>   <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_train</span><span class="o">-</span><span class="n">means</span><span class="p">)</span><span class="o">/</span><span class="n">std</span>
+<span class="n">X_test</span>  <span class="o">=</span> <span class="p">(</span><span class="n">X_test</span><span class="o">-</span><span class="n">means</span><span class="p">)</span><span class="o">/</span><span class="n">std</span>
+
+
+<span class="c1"># Training
+</span><span class="n">clf</span> <span class="o">=</span> <span class="n">svm</span><span class="p">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">'rbf'</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">gamma</span><span class="o">=</span><span class="s">'auto'</span><span class="p">)</span>
+<span class="n">clf</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Predition
+</span><span class="n">ytp</span> <span class="o">=</span> <span class="n">clf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">ysp</span> <span class="o">=</span> <span class="n">clf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="c1"># Evaluation
+</span><span class="k">print</span><span class="p">(</span><span class="s">'Training Accuracy:'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_train</span><span class="o">==</span><span class="n">ytp</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Testing  Accuracy:'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_test</span><span class="o">==</span><span class="n">ysp</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Training Accuracy: 0.9448275862068966
+Testing  Accuracy: 0.85
+</code></pre></div></div>
+
+<h3 id="window-wise-feature-extraction-2sec-window">Window-wise Feature Extraction (2sec window)</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">features</span><span class="o">=</span><span class="s">'rhythmic'</span><span class="p">,</span>
+                                  <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">redo</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">winsize</span><span class="o">=</span><span class="mi">128</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>100%|##################################################|100\100|Sg - 0
+Done..
+100%|##################################################|100\100|Sg - 1
+Done..
+100%|##################################################|100\100|Sg - 2
+Done..
+100%|##################################################|43\43|Sg - 0
+Done..
+100%|##################################################|43\43|Sg - 1
+Done..
+100%|##################################################|43\43|Sg - 2
+Done..
+</code></pre></div></div>
+
+<h4 id="notice-the-number-of-exmaples-shape-of-x-y">Notice the number of exmaples (Shape of X, y)</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>DataShape:  (1382, 84) (1382,) (565, 84) (565,)
+
+Class labels : [0 1 2]
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Normalization - SVM works well with normalized features
+</span><span class="n">means</span> <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">std</span>   <span class="o">=</span> <span class="n">X_train</span><span class="p">.</span><span class="n">std</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">X_train</span><span class="o">-</span><span class="n">means</span><span class="p">)</span><span class="o">/</span><span class="n">std</span>
+<span class="n">X_test</span>  <span class="o">=</span> <span class="p">(</span><span class="n">X_test</span><span class="o">-</span><span class="n">means</span><span class="p">)</span><span class="o">/</span><span class="n">std</span>
+
+
+<span class="c1"># Training
+</span><span class="n">clf</span> <span class="o">=</span> <span class="n">svm</span><span class="p">.</span><span class="n">SVC</span><span class="p">(</span><span class="n">kernel</span><span class="o">=</span><span class="s">'rbf'</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">gamma</span><span class="o">=</span><span class="s">'auto'</span><span class="p">)</span>
+<span class="n">clf</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">)</span>
+
+<span class="c1"># Predition
+</span><span class="n">ytp</span> <span class="o">=</span> <span class="n">clf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_train</span><span class="p">)</span>
+<span class="n">ysp</span> <span class="o">=</span> <span class="n">clf</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+
+<span class="c1"># Evaluation
+</span><span class="k">print</span><span class="p">(</span><span class="s">'Training Accuracy:'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_train</span><span class="o">==</span><span class="n">ytp</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Testing  Accuracy:'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">mean</span><span class="p">(</span><span class="n">y_test</span><span class="o">==</span><span class="n">ysp</span><span class="p">))</span>
+</code></pre></div></div>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Training Accuracy: 0.9261939218523878
+Testing  Accuracy: 0.8407079646017699
+</code></pre></div></div>
+
+<h2 id="tuning-feature-extraction-process">Tuning Feature Extraction process</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Subj = ph.Subject(SubID[1])
+# Subj.filter_EEG(band =[0.5],btype='highpass',order=5)
+# KurThr = 2
+# Corr   = 0.8
+# ICAMed = 'extended-infomax' #picard, fastICA
+# winsize=128*10 # 20sec
+</span>
+<span class="c1"># Subj.correct(method='ICA',winsize=winsize,hopesize=None,Corr=Corr,KurThr=KurThr,ICAMed=ICAMed,verbose=1)
+</span></code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#check help to see the options
+</span><span class="n">help</span><span class="p">(</span><span class="n">ph</span><span class="p">.</span><span class="n">Subject</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span><span class="n">features</span><span class="o">=</span><span class="s">'rhythmic'</span><span class="p">,</span>
+                                    <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                    <span class="n">redo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                    <span class="n">split</span><span class="o">=</span><span class="s">'serial'</span><span class="p">,</span> <span class="n">splitAt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                    <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span><span class="n">log10p1</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                    <span class="n">filter_order</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span><span class="n">method</span><span class="o">=</span><span class="s">'welch'</span><span class="p">,</span>
+                                    <span class="n">window</span><span class="o">=</span><span class="s">'hann'</span><span class="p">,</span> <span class="n">scaling</span><span class="o">=</span><span class="s">'density'</span><span class="p">,</span>
+                                    <span class="n">detrend</span><span class="o">=</span><span class="s">'constant'</span><span class="p">,</span><span class="n">period_average</span><span class="o">=</span><span class="s">'mean'</span><span class="p">,</span>
+                                    <span class="n">winsize</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">hopesize</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p style="text-align:center; font-weight:bold;">Execute with <br /><a class="reference external image-reference" href="https://mybinder.org/v2/gh/Nikeshbajaj/Notebooks/master?filepath=PhyAAt_Notebooks/Example3_FeatureExtraction.ipynb" target="_blank"><img src="https://mybinder.org/badge_logo.svg" width="150px" /></a></p>
+:ET

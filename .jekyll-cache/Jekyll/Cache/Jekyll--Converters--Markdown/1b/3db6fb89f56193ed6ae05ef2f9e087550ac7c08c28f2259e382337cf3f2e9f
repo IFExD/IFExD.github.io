@@ -1,0 +1,162 @@
+I"‚V<h1 id="introduction--getting-started">Introduction:  Getting started</h1>
+
+<p>In this section, we explain how to get started with the dataset and modeling. For ease all the necessary element and codes are put into one python library called - <strong><em>phyaat</em></strong>. Here we explain the functionalities that Phyaat library has with possible tuning the process of preprocessing and feature extractions. To start with a quick exmaple to preditive modeling check the <a href="/modeling"><strong>Predictive Modeling</strong>  </a> tab.</p>
+
+<font size="4"> For quick start with predictive modeling, check <a href="/modeling/index.html" target="_blank"> <span style="font-weight:bold"> EXAMPLE CODES</span></a></font>
+
+<h2 class="no-bg">1. Install Library </h2>
+
+<p>First install the python library</p>
+
+<div class="language-console highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="go">pip install phyaat
+</span></code></pre></div></div>
+
+<h2 class="no-bg">2. Download dataset </h2>
+<p>Once Phyaat library is installed, the dataset can be downloaded using it. You could download all the dataset together or data of one particulat subject for testing and running.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">phyaat</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'Version :'</span> <span class="p">,</span><span class="n">phyaat</span><span class="p">.</span><span class="n">__version__</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">phyaat</span> <span class="k">as</span> <span class="n">ph</span>
+
+<span class="c1"># to download dataset of subject 1 in given path 'dirpath'
+</span><span class="n">dirPath</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span><span class="p">,</span> <span class="n">subject</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># to download dataset of all the subjects
+</span><span class="n">dirPath</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">download_data</span><span class="p">(</span><span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span><span class="p">,</span> <span class="n">subject</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span><span class="n">overwrite</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1">#Check the humber of subjects are in directory - read the file path of all the subjects available
+</span>
+<span class="n">baseDir</span><span class="o">=</span><span class="s">'../PhyAAt_Data'</span>   <span class="c1"># or dirPath return path from above
+</span>
+<span class="c1">#returns a dictionary containing file names of all the subjects available in baseDir
+</span><span class="n">SubID</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">ReadFilesPath</span><span class="p">(</span><span class="n">baseDir</span><span class="p">)</span>
+
+<span class="c1"># list of all the subjects in the dataset directory
+</span><span class="k">print</span><span class="p">(</span><span class="n">SubID</span><span class="p">.</span><span class="n">keys</span><span class="p">())</span>
+</code></pre></div></div>
+
+<h2 class="no-bg">3. Preprocessing </h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">#Creat an object holding data of a subjects
+</span>
+<span class="n">Subj</span> <span class="o">=</span> <span class="n">ph</span><span class="p">.</span><span class="n">Subject</span><span class="p">(</span><span class="n">SubID</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+</code></pre></div></div>
+
+<h4 class="no-bg">3.1. Filtering </h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#filtering with highpass filter of cutoff frequency 0.5Hz
+</span><span class="n">Subj</span><span class="p">.</span><span class="n">filter_EEG</span><span class="p">(</span><span class="n">band</span> <span class="o">=</span><span class="p">[</span><span class="mf">0.5</span><span class="p">],</span><span class="n">btype</span><span class="o">=</span><span class="s">'highpass'</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+
+<span class="c1">#Filtering with custum range of feequecy should be between 0-64Hz
+</span>
+<span class="c1">#filtering with bandpass filter Thata
+</span><span class="n">Subj</span><span class="p">.</span><span class="n">filter_EEG</span><span class="p">(</span><span class="n">band</span> <span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">,</span><span class="mi">8</span><span class="p">],</span><span class="n">btype</span><span class="o">=</span><span class="s">'bandpass'</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+
+<span class="c1">#filtering with lowpass filter Delta
+</span><span class="n">Subj</span><span class="p">.</span><span class="n">filter_EEG</span><span class="p">(</span><span class="n">band</span> <span class="o">=</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">btype</span><span class="o">=</span><span class="s">'lowpass'</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<h4 class="no-bg">3.2 Applyting Artifact Removal on EEG ICA based approach</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># with window size =1280 (10 sec)
+</span><span class="n">Subj</span><span class="p">.</span><span class="n">correct</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'ICA'</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">winsize</span><span class="o">=</span><span class="mi">128</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1">#method ='WT' or 'ATAR' not implemented yet
+</span>
+
+<span class="c1">#Chnage parameters of ICA based artifact Removal
+</span><span class="n">KurThr</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">Corr</span>   <span class="o">=</span> <span class="mf">0.8</span>
+<span class="n">ICAMed</span> <span class="o">=</span> <span class="s">'extended-infomax'</span> <span class="c1">#picard, fastICA
+</span>
+<span class="n">Subj</span><span class="p">.</span><span class="n">correct</span><span class="p">(</span><span class="n">method</span><span class="o">=</span><span class="s">'ICA'</span><span class="p">,</span><span class="n">winsize</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span><span class="n">hopesize</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">Corr</span><span class="o">=</span><span class="n">Corr</span><span class="p">,</span><span class="n">KurThr</span><span class="o">=</span><span class="n">KurThr</span><span class="p">,</span>
+             <span class="n">ICAMed</span><span class="o">=</span><span class="n">ICAMed</span><span class="p">,</span><span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="p">[</span><span class="s">'hamming'</span><span class="p">,</span><span class="bp">True</span><span class="p">],</span>
+             <span class="n">winMeth</span><span class="o">=</span><span class="s">'custom'</span><span class="p">)</span>
+
+<span class="c1">#check all the parameters here
+</span><span class="n">help</span><span class="p">(</span><span class="n">ph</span><span class="p">.</span><span class="n">Subject</span><span class="p">.</span><span class="n">correct</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 class="no-bg">4. Extract X,y for a task Rhythmic Features</h2>
+
+<h4 class="no-bg">4.1 Extracting Features Segment-wise</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Task 4:  LWR classification
+</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+<span class="c1"># Task 1: Attention Score Prediction
+</span>
+<span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+
+<span class="c1"># Task 2: Noise Level Predicition
+</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+
+<span class="c1"># Task 3: Semanticity Classification
+</span><span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+<span class="c1">#If features are extracted for task 1, 2 or 3 (listening segments)
+# next time while extracting won't compute features again, unless redo=True
+</span>
+</code></pre></div></div>
+
+<h4 class="no-bg">4.1 Extracting Features Window-wise</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">winsize</span><span class="o">=</span><span class="mi">128</span> <span class="c1"># 1 sec window
+</span> <span class="n">hopesize</span><span class="o">=</span><span class="mi">32</span> <span class="c1"># 0.25 shift for next window, if None, overlape is half of windowsize
+</span>
+<span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s">'rhythmic'</span><span class="p">,</span>
+                            <span class="n">winsize</span><span class="o">=</span><span class="n">winsize</span><span class="p">,</span> <span class="n">hopesize</span><span class="o">=</span><span class="n">hopesize</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+</code></pre></div></div>
+
+<h4 class="no-bg">4.2 Random split for train-test</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s">'rhythmic'</span><span class="p">,</span>
+                           <span class="n">winsize</span><span class="o">=</span><span class="n">winsize</span><span class="p">,</span> <span class="n">hopesize</span><span class="o">=</span><span class="n">hopesize</span><span class="p">,</span><span class="n">split</span><span class="o">=</span><span class="s">'random'</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">'DataShape: '</span><span class="p">,</span><span class="n">X_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">y_train</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span><span class="n">X_test</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">y_test</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="se">\n</span><span class="s">Class labels :'</span><span class="p">,</span><span class="n">np</span><span class="p">.</span><span class="n">unique</span><span class="p">(</span><span class="n">y_train</span><span class="p">))</span>
+
+</code></pre></div></div>
+
+<h4 class="no-bg">4.3 Hyperparameters for feature extraction method </h4>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">X_train</span><span class="p">,</span><span class="n">y_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span><span class="n">y_test</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">(</span><span class="n">ttask</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="s">'rhythmic'</span><span class="p">,</span> <span class="n">eSample</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+               <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">redo</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s">'serial'</span><span class="p">,</span> <span class="n">splitAt</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+               <span class="n">log10p1</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">flat</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">filter_order</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">'welch'</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">'hann'</span><span class="p">,</span>
+               <span class="n">scaling</span><span class="o">=</span><span class="s">'density'</span><span class="p">,</span> <span class="n">detrend</span><span class="o">=</span><span class="s">'constant'</span><span class="p">,</span> <span class="n">period_average</span><span class="o">=</span><span class="s">'mean'</span><span class="p">,</span>
+               <span class="n">winsize</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">hopesize</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+<span class="c1">#Check help
+</span><span class="k">print</span><span class="p">(</span><span class="n">ph</span><span class="p">.</span><span class="n">Subject</span><span class="p">.</span><span class="n">getXy_eeg</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 class="no-bg">5.Extracting LWR segments for extranal processing</h2>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">L</span><span class="p">,</span><span class="n">W</span><span class="p">,</span><span class="n">R</span><span class="p">,</span> <span class="n">Scores</span><span class="p">,</span> <span class="n">Cols</span> <span class="o">=</span> <span class="n">Subj</span><span class="p">.</span><span class="n">getLWR</span><span class="p">()</span>
+
+</code></pre></div></div>
+:ET

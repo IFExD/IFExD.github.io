@@ -1,0 +1,6 @@
+---
+title: example
+layout: base
+---
+
+  
