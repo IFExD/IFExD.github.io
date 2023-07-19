@@ -5,6 +5,7 @@ layout: base
 
 # Introduction:  Getting started
 
+<!---
 In this section, we explain how to get started with the dataset and modeling. For ease all the necessary element and codes are put into one python library called - ***phyaat***. Here we explain the functionalities that Phyaat library has with possible tuning the process of preprocessing and feature extractions. To start with a quick exmaple to preditive modeling check the [**Predictive Modeling**  ](/modeling) tab.
 
 <font size="4"> For quick start with predictive modeling, check <a href="/modeling/index.html" target="_blank"> <span style="font-weight:bold"> EXAMPLE CODES</span></a></font>
@@ -178,3 +179,4 @@ print(ph.Subject.getXy_eeg)
 L,W,R, Scores, Cols = Subj.getLWR()
 
 ```
+-->
